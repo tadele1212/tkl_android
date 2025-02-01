@@ -211,6 +211,19 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
                 ),
               const Spacer(),
               ElevatedButton(
+                onPressed: _showStopsTable,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: const Text('View All Stops'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacementNamed('/');
                 },
@@ -220,6 +233,7 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
                     horizontal: 32,
                     vertical: 16,
                   ),
+                  minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text('Stop Tracking'),
               ),
