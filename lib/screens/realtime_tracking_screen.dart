@@ -128,13 +128,14 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        maxChildSize: 0.9,
+        initialChildSize: 1.0,
+        maxChildSize: 1.0,
         minChildSize: 0.5,
         builder: (_, controller) => StopsTableModal(
           stops: _stops ?? [],
           controller: scrollController,
           currentStop: _currentStop,
+          serviceNumber: widget.serviceNumber,
         ),
       ),
     );
