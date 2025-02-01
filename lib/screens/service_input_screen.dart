@@ -47,26 +47,47 @@ class _ServiceInputScreenState extends State<ServiceInputScreen> {
     try {
       final apiService = ApiService();
       
-      // Add health check
-      final isHealthy = await apiService.checkHealth();
-      if (!isHealthy) {
-        throw Exception('Server is not responding. Please try again later.');
+      // Add timeout to health check
+      bool isHealthy = false;
+      try {
+        isHealthy = await apiService.checkHealth()
+            .timeout(const Duration(seconds: 5));
+      } catch (e) {
+        print('Health check failed: $e');
+        // If health check times out, try the main request anyway
       }
 
-      final serviceNumber = _serviceController.text;
-      await apiService.getServiceDetails(serviceNumber);
-      await _saveServiceNumber(serviceNumber);
-      
-      if (mounted) {
-        Navigator.pushReplacementNamed(
-          context, 
-          '/tracking',
-          arguments: serviceNumber,
-        );
+      // If health check failed, try main request with retries
+      int retryCount = 0;
+      while (retryCount < 3) {
+        try {
+          final serviceNumber = _serviceController.text;
+          await apiService.getServiceDetails(serviceNumber)
+              .timeout(const Duration(seconds: 10));
+          await _saveServiceNumber(serviceNumber);
+          
+          if (mounted) {
+            Navigator.pushReplacementNamed(
+              context, 
+              '/tracking',
+              arguments: serviceNumber,
+            );
+          }
+          return; // Success, exit the function
+        } catch (e) {
+          print('Try ${retryCount + 1} failed: $e');
+          retryCount++;
+          if (retryCount < 3) {
+            // Wait before retrying
+            await Future.delayed(const Duration(seconds: 1));
+          } else {
+            throw e; // All retries failed
+          }
+        }
       }
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = 'Failed to connect to service. Please try again.';
       });
     } finally {
       if (mounted) {

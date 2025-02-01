@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/bus_stop.dart';
+import '../models/service_response.dart';
 import '../services/api_service.dart';
 import '../utils/location_service.dart';
 import '../utils/constants.dart';
@@ -39,15 +40,48 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
 
   Future<void> _initializeTracking() async {
     try {
-      final response = await _apiService.getServiceDetails(widget.serviceNumber);
+      // Stop any existing timer
+      _updateTimer?.cancel();
+      
+      // Clear existing data
       setState(() {
-        _stops = response.stops;
+        _stops = null;
+        _currentStop = null;
+        _nextStop = null;
+        _errorMessage = null;
+        _isLoading = true;
+      });
+
+      // Try to get service details with retry
+      int retryCount = 0;
+      ServiceResponse? response;
+      while (retryCount < 3 && response == null) {
+        try {
+          response = await _apiService.getServiceDetails(widget.serviceNumber);
+        } catch (e) {
+          retryCount++;
+          if (retryCount == 3) {
+            throw e;
+          }
+          // Wait before retrying
+          await Future.delayed(Duration(seconds: 1));
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _stops = response!.stops;
         _isLoading = false;
       });
+
+      // Start location updates only after successful initialization
       _startLocationUpdates();
     } catch (e) {
+      if (!mounted) return;
+      
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = 'Failed to initialize tracking: ${e.toString()}. Please try refreshing.';
         _isLoading = false;
       });
     }
@@ -121,6 +155,16 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
         title: Text('Service ${widget.serviceNumber}'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              setState(() {
+                _isLoading = true;
+                _errorMessage = null;
+              });
+              await _initializeTracking();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.list),
             onPressed: _showStopsTable,
           ),
@@ -132,11 +176,30 @@ class _RealtimeTrackingScreenState extends State<RealtimeTrackingScreen> {
           child: Column(
             children: [
               if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: AppColors.error),
+                Card(
+                  color: AppColors.error.withOpacity(0.1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          style: TextStyle(color: AppColors.error),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _isLoading = true;
+                              _errorMessage = null;
+                            });
+                            _initializeTracking();
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               if (_currentStop != null)

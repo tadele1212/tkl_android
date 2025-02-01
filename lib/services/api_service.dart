@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';  // Add this import for TimeoutException
 import 'package:http/http.dart' as http;
 import '../models/service_response.dart';
 import '../models/bus_stop.dart';
@@ -19,6 +20,11 @@ class ApiService {
         body: json.encode({
           'service_no': serviceNumber,
         }),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw TimeoutException('Request timed out. Please check your connection.');
+        },
       );
 
       if (response.statusCode == 200) {
