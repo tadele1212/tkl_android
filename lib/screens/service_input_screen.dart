@@ -144,6 +144,7 @@ class _ServiceInputScreenState extends State<ServiceInputScreen> {
                             horizontal: 32,
                             vertical: 16,
                           ),
+                          foregroundColor: Colors.white,
                         ),
                         child: const Text('Track Service'),
                       ),
