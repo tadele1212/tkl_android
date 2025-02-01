@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/bus_stop.dart';
+import '../utils/constants.dart';
 
 class StopsTableModal extends StatelessWidget {
   final List<BusStop> stops;
@@ -25,18 +26,21 @@ class StopsTableModal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          Container(
+            color: AppColors.primary,
+            width: double.infinity,
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'Bus Service $serviceNumber Route',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
-          const Divider(height: 1),
-          Padding(
+          Container(
+            color: AppColors.primary,
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
@@ -44,18 +48,18 @@ class StopsTableModal extends StatelessWidget {
                   width: 50,
                   child: Text(
                     'Seq',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Expanded(
                   child: Text(
                     'Bus Stop',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -64,16 +68,15 @@ class StopsTableModal extends StatelessWidget {
                   child: Text(
                     'Distance',
                     textAlign: TextAlign.right,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
           Expanded(
             child: ListView.builder(
               controller: controller,
